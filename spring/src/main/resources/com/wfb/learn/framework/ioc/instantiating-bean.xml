@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 使用构造器进行实例化 -->
+    <bean id="test1" class="com.wfb.learn.framework.ioc.Test" />
+
+    <!-- 使用静态工厂方法进行实例化 -->
+    <bean id="test2" class="com.wfb.learn.framework.ioc.Test" factory-method="createTest" />
+
+    <!-- 使用实例工厂方法进行实例化 -->
+    <bean id="serviceLocator" class="com.wfb.learn.framework.ioc.InstantiatingBean.DefaultServiceLocator" />
+    <bean id="test3" factory-bean="serviceLocator" factory-method="createTest" />
+
+    <!-- 使用静态工厂方法实例化另一个类型的bean -->
+    <bean id="test4" class="com.wfb.learn.framework.ioc.InstantiatingBean" factory-method="createTest" />
+
+    <!-- 实例化bean -->
+    <bean id="test5" class="com.wfb.learn.framework.ioc.InstantiatingBean.TestFactoryBean" />
+
+</beans>

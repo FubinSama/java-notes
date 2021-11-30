@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="parent" class="com.wfb.learn.framework.ioc.BeanDefinitionInheritance.Parent">
+        <property name="name" value="name" />
+    </bean>
+
+    <!-- 子定义声明的类（即class属性）必须可以完全接收父定义中定义的属性，但是Child类不需要是Parent类的子类 -->
+    <bean id="child" class="com.wfb.learn.framework.ioc.BeanDefinitionInheritance.Child" parent="parent">
+        <property name="text" value="text" />
+    </bean>
+
+    <!--
+    父定义如果没有声明class属性，必须指定abstract属性为true;
+    如果使用getBean("parent2")，那么容器会抛出异常。因为声明了`abstract`属性，所以容器在调用`preInstantiateSingletons`方法时会忽略该bean定义
+    -->
+    <bean id="parent2" abstract="true">
+        <property name="name" value="name1" />
+        <property name="text" value="text1" />
+    </bean>
+
+    <!-- 在子定义中指定class属性，并覆盖bean的text属性的值 -->
+    <bean id="child2" class="com.wfb.learn.framework.ioc.BeanDefinitionInheritance.Child" parent="parent2">
+        <property name="text" value="text2" />
+    </bean>
+
+</beans>

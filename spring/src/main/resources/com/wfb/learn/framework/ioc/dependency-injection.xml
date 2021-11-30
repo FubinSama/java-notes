@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="itemDao" class="com.wfb.learn.framework.ioc.ItemDao" />
+    <bean id="accountDao" class="com.wfb.learn.framework.ioc.AccountDao" />
+
+    <!--
+    构造参数依赖注入：
+    构造函数参数解析通过使用参数的类型进行匹配。
+    如果 bean 定义的构造函数参数中不存在潜在的歧义，那么在 bean 定义中构造函数参数的顺序就是在实例化 bean 时将这些参数提供给适当的构造函数的顺序。
+    -->
+    <bean id="test10" class="com.wfb.learn.framework.ioc.PetStoreService">
+        <!-- 虽然构造函数的顺序为(AccountDao, ItemDao)，但是因为两者类型不同，所以我们就算先写itemDao也没有问题 -->
+        <constructor-arg ref="itemDao" />
+        <constructor-arg ref="accountDao" />
+    </bean>
+    <bean id="test11" class="com.wfb.learn.framework.ioc.Test2">
+        <!--
+        name1和name2都是String类型的依赖，Spring会按照构造函数中String类型出现的顺序和String类型的依赖定义顺序相关联，
+        即为第一个参数name1赋值为`name1` ，为第三个参数name2赋值为`name2`
+        第二个参数和第四个参数都是Integer类型的，但因为我们显示的指定了index值（从零开始，指明了为第几个参数声明的依赖值），所以会使用该声明来覆盖默认的策略。
+        该声明实际创建的`Test2`实例为`Test2{name1='name1', int1=1, name2='name2', int2=2}`
+        -->
+        <constructor-arg type="java.lang.String" value="name1" />
+        <constructor-arg type="java.lang.String" value="name2" />
+        <constructor-arg type="java.lang.Integer" index="3" value="2" />
+        <constructor-arg type="java.lang.Integer" index="1" value="1" />
+    </bean>
+
+    <!-- 静态工厂方法依赖注入：与构造参数依赖注入类似 -->
+    <bean id="test20" class="com.wfb.learn.framework.ioc.PetStoreService" factory-method="createPetStoreService">
+        <constructor-arg ref="itemDao" />
+        <constructor-arg ref="accountDao" />
+    </bean>
+    <bean id="test21" class="com.wfb.learn.framework.ioc.Test2" factory-method="createTest2">
+        <constructor-arg type="java.lang.String" value="name1" />
+        <constructor-arg type="java.lang.String" value="name2" />
+        <constructor-arg type="java.lang.Integer" index="3" value="2" />
+        <constructor-arg type="java.lang.Integer" index="1" value="1" />
+    </bean>
+
+    <!-- 实例工厂方法依赖注入：与构造参数依赖注入类似 -->
+    <bean id="petStoreServiceFactory" class="com.wfb.learn.framework.ioc.PetStoreService.PetStoreServiceFactory" />
+    <bean id="test2Factory" class="com.wfb.learn.framework.ioc.Test2.Test2Factory" />
+    <bean id="test30" factory-bean="petStoreServiceFactory" factory-method="createPetStoreService">
+        <constructor-arg ref="itemDao" />
+        <constructor-arg ref="accountDao" />
+    </bean>
+    <bean id="test31" factory-bean="test2Factory" factory-method="createTest2">
+        <constructor-arg type="java.lang.String" value="name1" />
+        <constructor-arg type="java.lang.String" value="name2" />
+        <constructor-arg type="java.lang.Integer" index="3" value="2" />
+        <constructor-arg type="java.lang.Integer" index="1" value="1" />
+    </bean>
+
+    <!--
+    setter器依赖注入:
+    基于 Setter 的 DI 是通过容器在调用无参数构造函数或无参数静态工厂方法来实例化 bean 后调用 bean 上的 setter 方法来完成的。
+    -->
+    <bean id="test40" class="com.wfb.learn.framework.ioc.PetStoreService">
+        <property name="itemDao" ref="itemDao" />
+        <property name="accountDao" ref="accountDao" />
+    </bean>
+    <bean id="test41" class="com.wfb.learn.framework.ioc.Test2">
+        <property name="int1" value="1" />
+        <property name="int2" value="2" />
+        <property name="name1" value="name1" />
+        <property name="name2" value="name2" />
+    </bean>
+
+
+    <!-- 依赖注入各种类型的细节例子： -->
+    <bean id="test00" class="com.wfb.learn.framework.ioc.Test">
+        <property name="name" value="test00" />
+    </bean>
+
+    <!-- 使用构造器进行依赖注入 -->
+    <bean id="dependencyInjectionTest00" class="com.wfb.learn.framework.ioc.DependencyInjection.DependencyInjectionTest">
+        <!-- 直接值 -->
+        <constructor-arg name="primitive" value="1" />
+        <!-- idref元素 -->
+        <constructor-arg name="idref">
+            <idref bean="test00" />
+        </constructor-arg>
+        <!-- 对其他bean的引用 -->
+        <constructor-arg name="bean" ref="test00" />
+        <!-- 内部bean -->
+        <constructor-arg name="innerBean">
+            <bean class="com.wfb.learn.framework.ioc.Test">
+                <property name="name" value="dependencyInjectionTest00内部Bean"/>
+            </bean>
+        </constructor-arg>
+        <!-- 集合（List） -->
+        <constructor-arg name="list">
+            <list>
+                <!-- 使用直接量 -->
+                <value>list0</value>
+                <!-- 引用其他bean -->
+                <ref bean="test00"/>
+            </list>
+        </constructor-arg>
+        <!-- 泛型集合（Map<String, String>） -->
+        <constructor-arg name="genericMap">
+            <map>
+                <entry key="k1" value="v1" />
+                <entry key="k2" value="v2" />
+            </map>
+        </constructor-arg>
+        <!-- Null或Empty的String值 -->
+        <constructor-arg name="nullOrEmptyStr">
+            <null />
+        </constructor-arg>
+        <!-- 复合属性名（为内部bean赋值，只能使用setter器进行该操作） -->
+        <property name="innerBean.name" value="dependencyInjectionTest00内部Bean再赋值" />
+    </bean>
+
+    <!-- 使用p-namespace实现，需要声明：`xmlns:c="http://www.springframework.org/schema/c"` -->
+    <bean id="dependencyInjectionTest01" class="com.wfb.learn.framework.ioc.DependencyInjection.DependencyInjectionTest"
+          c:primitive="1"
+          c:bean-ref="test00"
+    >
+        <!-- c-namespace只支持直接量和对其他bean的引用，所以其他形式还是要用原来的写法 -->
+        <!-- idref元素 -->
+        <constructor-arg name="idref">
+            <idref bean="test00" />
+        </constructor-arg>
+        <!-- 内部bean -->
+        <constructor-arg name="innerBean">
+            <bean class="com.wfb.learn.framework.ioc.Test">
+                <property name="name" value="dependencyInjectionTest01内部Bean"/>
+            </bean>
+        </constructor-arg>
+        <!-- 集合（List） -->
+        <constructor-arg name="list">
+            <list>
+                <!-- 使用直接量 -->
+                <value>list0</value>
+                <!-- 引用其他bean -->
+                <ref bean="test00"/>
+            </list>
+        </constructor-arg>
+        <!-- 泛型集合（Map<String, String>） -->
+        <constructor-arg name="genericMap">
+            <map>
+                <entry key="k1" value="v1" />
+                <entry key="k2" value="v2" />
+            </map>
+        </constructor-arg>
+        <!-- Null或Empty的String值 -->
+        <constructor-arg name="nullOrEmptyStr">
+            <null />
+        </constructor-arg>
+        <!-- 复合属性名（为内部bean赋值，只能使用setter器进行该操作） -->
+        <property name="innerBean.name" value="dependencyInjectionTest01内部Bean再赋值" />
+    </bean>
+
+    <!-- 使用setter器同样的实现 -->
+    <bean id="dependencyInjectionTest10" class="com.wfb.learn.framework.ioc.DependencyInjection.DependencyInjectionTest">
+        <!-- 直接值 -->
+        <property name="primitive" value="1" />
+        <!-- idref元素 -->
+        <property name="idref">
+            <idref bean="test00" />
+        </property>
+        <!-- 对其他bean的引用 -->
+        <property name="bean" ref="test00" />
+        <!-- 内部bean -->
+        <property name="innerBean">
+            <bean class="com.wfb.learn.framework.ioc.Test">
+                <property name="name" value="dependencyInjectionTest10内部Bean"/>
+            </bean>
+        </property>
+        <!-- 集合（List） -->
+        <property name="list">
+            <list>
+                <!-- 使用直接量 -->
+                <value>list0</value>
+                <!-- 引用其他bean -->
+                <ref bean="test00"/>
+            </list>
+        </property>
+        <!-- 泛型集合（Map<String, String>） -->
+        <property name="genericMap">
+            <map>
+                <entry key="k1" value="v1" />
+                <entry key="k2" value="v2" />
+            </map>
+        </property>
+        <!-- Null或Empty的String值 -->
+        <property name="nullOrEmptyStr">
+            <null />
+        </property>
+        <!-- 复合属性名（为内部bean赋值，只能使用setter器进行该操作） -->
+        <property name="innerBean.name" value="dependencyInjectionTest10内部Bean再赋值" />
+    </bean>
+
+    <!-- 使用`p-namespace`实现，需要声明：`xmlns:p="http://www.springframework.org/schema/p"` -->
+    <bean id="dependencyInjectionTest11" class="com.wfb.learn.framework.ioc.DependencyInjection.DependencyInjectionTest"
+          p:primitive = "1"
+          p:bean-ref="test00"
+    >
+        <!-- p-namespace只支持直接量和对其他bean的引用，所以其他形式还是要用原来的写法 -->
+        <!-- idref元素 -->
+        <property name="idref">
+            <idref bean="test00" />
+        </property>
+        <!-- 内部bean -->
+        <property name="innerBean">
+            <bean class="com.wfb.learn.framework.ioc.Test">
+                <property name="name" value="dependencyInjectionTest11内部Bean"/>
+            </bean>
+        </property>
+        <!-- 集合（List） -->
+        <property name="list">
+            <list>
+                <!-- 使用直接量 -->
+                <value>list0</value>
+                <!-- 引用其他bean -->
+                <ref bean="test00"/>
+            </list>
+        </property>
+        <!-- 泛型集合（Map<String, String>） -->
+        <property name="genericMap">
+            <map>
+                <entry key="k1" value="v1" />
+                <entry key="k2" value="v2" />
+            </map>
+        </property>
+        <!-- Null或Empty的String值 -->
+        <property name="nullOrEmptyStr">
+            <null />
+        </property>
+        <!-- 复合属性名（为内部bean赋值，只能使用setter器进行该操作） -->
+        <property name="innerBean.name" value="dependencyInjectionTest11内部Bean再赋值" />
+    </bean>
+
+    <!-- 另外Spring还支持集合合并 -->
+    <bean id="parent" abstract="true" class="com.wfb.learn.framework.ioc.DependencyInjection.DependencyInjectionTest">
+        <!-- 集合（List） -->
+        <property name="list">
+            <list>
+                <!-- 使用直接量 -->
+                <value>list0</value>
+                <!-- 引用其他bean -->
+                <ref bean="test00"/>
+            </list>
+        </property>
+        <!-- 泛型集合（Map<String, String>） -->
+        <property name="genericMap">
+            <map>
+                <entry key="k1" value="v1" />
+                <entry key="k2" value="v2" />
+            </map>
+        </property>
+    </bean>
+    <!-- 声明merge=true,该bean的genericMap属性将包含父bean的所有元素，对于list属性，因为子bean未声明，将直接继承父bean -->
+    <bean id="child1" parent="parent">
+        <property name="genericMap">
+            <map merge="true">
+                <entry key="k3" value="v3" />
+                <entry key="k4" value="v4" />
+            </map>
+        </property>
+    </bean>
+    <!-- 未声明merge=true,该bean的genericMap属性将只包含自己定义的元素，会覆盖父类的同名元素，对于list属性，因为子bean未声明，将直接继承父bean -->
+    <bean id="child2" parent="parent">
+        <property name="genericMap">
+            <map>
+                <entry key="k3" value="v3" />
+                <entry key="k4" value="v4" />
+            </map>
+        </property>
+    </bean>
+
+    <!-- 下面是DependsOn示例，之所以设置为懒加载，是为了让构造函数的调用发生在我们打印的那行下面的`getBean`方法调用时，而不是在容器初始化时就调用了，方便看日志 -->
+    <bean id="dependsOn0" class="com.wfb.learn.framework.ioc.DependencyInjection.DependsOn0" lazy-init="true" depends-on="dependsOn1,dependsOn2" />
+    <bean id="dependsOn1" class="com.wfb.learn.framework.ioc.DependencyInjection.DependsOn1" lazy-init="true" />
+    <bean id="dependsOn2" class="com.wfb.learn.framework.ioc.DependencyInjection.DependsOn2" lazy-init="true" />
+
+</beans>

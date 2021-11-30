@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 单例beanA -->
+    <bean id="testA0" class="com.wfb.learn.framework.ioc.BeanScope.BeanA" />
+    <!-- 单例beanB -->
+    <bean id="testB0" class="com.wfb.learn.framework.ioc.BeanScope.BeanB" />
+
+    <!-- 原型beanA -->
+    <bean id="testA1" class="com.wfb.learn.framework.ioc.BeanScope.BeanA" scope="prototype" />
+    <!-- 原型beanB -->
+    <bean id="testB1" class="com.wfb.learn.framework.ioc.BeanScope.BeanB" scope="prototype" />
+
+    <!-- 单例beanA依赖于单例beanB -->
+    <bean id="testA0B0" class="com.wfb.learn.framework.ioc.BeanScope.BeanA">
+        <property name="beanB" ref="testB0" />
+    </bean>
+    <!-- 单例beanA依赖于原型beanB（实际上beanB不再是原型了） -->
+    <bean id="testA0B1" class="com.wfb.learn.framework.ioc.BeanScope.BeanA">
+        <property name="beanB" ref="testB1" />
+    </bean>
+    <!-- 原型beanA依赖于单例beanB -->
+    <bean id="testA1B0" class="com.wfb.learn.framework.ioc.BeanScope.BeanA" scope="prototype">
+        <property name="beanB" ref="testB0" />
+    </bean>
+    <!-- 原型beanA依赖于原型beanB -->
+    <bean id="testA1B1" class="com.wfb.learn.framework.ioc.BeanScope.BeanA" scope="prototype">
+        <property name="beanB" ref="testB1" />
+    </bean>
+
+    <!-- 单例beanA依赖于原型beanB：使用AOP作用域代理 -->
+    <bean id="testB2" class="com.wfb.learn.framework.ioc.BeanScope.BeanB" scope="prototype">
+        <!--
+        需要在`beans`上添加`xmlns:aop="http://www.springframework.org/schema/aop"`，
+        并在`xsi:schemaLocation`中添加两个模式匹配规则路径，
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd
+        -->
+        <aop:scoped-proxy/>
+    </bean>
+    <bean id="testA0B2" class="com.wfb.learn.framework.ioc.BeanScope.BeanA">
+        <!--
+        这里注入的是testB2的作用域代理对象，调用testB2的方法时，代理对象会做一个相当于实际调用一次`getBean("targetBeanName.testB2")`方法的操作，
+        然后用获取对象去执行实际执行的方法
+        -->
+        <property name="beanB" ref="testB2" />
+    </bean>
+
+</beans>
